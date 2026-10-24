@@ -1,29 +1,21 @@
-<div style="background:#f0f4ff;padding:20px;border-radius:12px;margin-top:20px;text-align:left;max-width:500px;margin-left:auto;margin-right:auto">
-  <h3 style="text-align:center;color:#0a1931">Register Now Online</h3>
-  <input id="sName" placeholder="Full Name" style="width:100%;padding:12px;margin:6px 0;border-radius:6px;border:1px solid #ccc">
-  <input id="sPhone" placeholder="Phone e.g 0718..." style="width:100%;padding:12px;margin:6px 0;border-radius:6px;border:1px solid #ccc">
-  <select id="sCourse" style="width:100%;padding:12px;margin:6px 0;border-radius:6px;border:1px solid #ccc">
-    <option>ICT Level 4 - Ksh 5,000</option>
-    <option>Programming Python - Ksh 7,000</option>
-    <option>Kids Coding Club - Ksh 3,500</option>
-    <option>Mwalimu Coding Rescue - Ksh 2,500</option>
-  </select>
-  <button onclick="registerStudent()" style="width:100%;background:#0a1931;color:#fff;padding:12px;border:none;border-radius:8px;font-weight:bold">SUBMIT REGISTRATION</button>
-  <p id="regMsg" style="text-align:center;color:green;font-weight:bold"></p>
-</div>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-function registerStudent(){
+const SUPA_URL = "PASTE_YOUR_URL_HERE";
+const SUPA_KEY = "PASTE_YOUR_ANON_KEY_HERE";
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+async function registerStudent(){
   let name=document.getElementById('sName').value;
   let phone=document.getElementById('sPhone').value;
   let course=document.getElementById('sCourse').value;
   if(name==''||phone==''){alert('Jaza Jina na Namba');return}
-  let students=JSON.parse(localStorage.getItem('mda_students')||'[]');
-  students.push({id:Date.now(),name:name,phone:phone,course:course,date:new Date().toLocaleString(),status:'Pending'});
-  localStorage.setItem('mda_students',JSON.stringify(students));
-  document.getElementById('regMsg').innerText='✅ Asante '+name+'! Umeregister. Tutakupigia.';
+  
+  let { error } = await supa.from('mda_students').insert([{name:name, phone:phone, course:course, date:new Date().toLocaleString(), status:'Pending'}]);
+  
+  if(error){alert('Error: '+error.message); return;}
+  
+  document.getElementById('regMsg').innerText='✅ Asante '+name+'! Umeregister. Data saved ONLINE!';
   document.getElementById('sName').value='';document.getElementById('sPhone').value='';
-  // auto send to WhatsApp
   window.open('https://wa.me/254718899014?text=New%20MDA%20Registration:%20'+encodeURIComponent(name+' - '+phone+' - '+course),'_blank');
 }
 </script>
