@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"><title>MDA Admin - Muhsin</title>
+<style>
+ body{font-family:Arial;background:#f5f7ff;margin:0}
+ header{background:#0a1931;color:#fff;padding:15px;display:flex;justify-content:space-between}
+ .login{max-width:400px;margin:100px auto;background:#fff;padding:30px;border-radius:12px;text-align:center;box-shadow:0 5px 20px rgba(0,0,0,0.1)}
+ input{width:100%;padding:12px;margin:8px 0;border-radius:6px;border:1px solid #ccc}
+ button{width:100%;padding:12px;background:#0a1931;color:#fff;border:none;border-radius:8px;font-weight:bold;cursor:pointer}
+ table{width:100%;border-collapse:collapse;background:#fff}
+ th,td{padding:12px;border-bottom:1px solid #eee;text-align:left;font-size:14px}
+ th{background:#0a1931;color:#fff}
+ .badge{padding:4px 8px;border-radius:20px;font-size:12px}
+ .pending{background:#fff3cd;color:#856404}
+ .confirmed{background:#d4edda;color:#155724}
+</style>
+</head>
+<body>
+
+<div id="loginBox" class="login">
+  <h2>MDA ADMIN LOGIN</h2>
+  <p>SKYNET-CYBER SHIANDA - Muhsin Only</p>
+  <input id="u" placeholder="Username">
+  <input id="p" type="password" placeholder="Password">
+  <button onclick="login()">LOGIN</button>
+  <p id="err" style="color:red"></p>
+  <p style="font-size:12px">Demo: muhsin / skynet123</p>
+</div>
+
+<div id="dash" style="display:none">
+  <header>
+    <div><b>MUMIAS DIGITAL ACADEMY - ADMIN</b> | Admin: <span id="adminName">MUHSIN</span></div>
+    <div><button onclick="logout()" style="width:auto;padding:6px 15px;background:#ffc300;color:#000">Logout</button></div>
+  </header>
+  <div style="padding:20px">
+    <h2>Signal Log - Student Registrations (Like Termii)</h2>
+    <div style="display:flex;gap:15px;margin-bottom:15px">
+      <div style="background:#fff;padding:15px;border-radius:10px;flex:1;text-align:center"><h3 id="total">0</h3><p>Total Students</p></div>
+      <div style="background:#fff;padding:15px;border-radius:10px;flex:1;text-align:center"><h3 id="pend">0</h3><p>Pending</p></div>
+      <div style="background:#fff;padding:15px;border-radius:10px;flex:1;text-align:center"><h3 id="conf">0</h3><p>Confirmed</p></div>
+    </div>
+    <div style="background:#fff;padding:10px;border-radius:10px;overflow:auto">
+      <table>
+        <thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Course</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <br>
+    <button onclick="exportCSV()" style="width:auto;background:#25D366">Export to Excel (CSV)</button>
+    <button onclick="clearAll()" style="width:auto;background:red;margin-left:10px">Clear All</button>
+  </div>
+</div>
+
+<script>
+function login(){
+ let u=document.getElementById('u').value;let p=document.getElementById('p').value;
+ if((u=='muhsin'&&p=='skynet123')||(u=='admin'&&p=='skynet123')){
+  localStorage.setItem('mda_admin','logged');
+  document.getElementById('loginBox').style.display='none';
+  document.getElementById('dash').style.display='block';
+  loadData();
+ }else{document.getElementById('err').innerText='Wrong password, Mwalimu!'}
+}
+function checkLogin(){if(localStorage.getItem('mda_admin')=='logged'){document.getElementById('loginBox').style.display='none';document.getElementById('dash').style.display='block';loadData();}}
+checkLogin();
+function logout(){localStorage.removeItem('mda_admin');location.reload();}
+function loadData(){
+ let students=JSON.parse(localStorage.getItem('mda_students')||'[]');
+ let tbody=document.getElementById('tbody');tbody.innerHTML='';
+ let pend=0,conf=0;
+ students.slice().reverse().forEach((s,i)=>{
+  if(s.status=='Pending')pend++;else conf++;
+  tbody.innerHTML+=`<tr><td>${s.id.toString().slice(-5)}</td><td>${s.name}</td><td>${s.phone}</td><td>${s.course}</td><td>${s.date}</td><td><span class="badge ${s.status=='Pending'?'pending':'confirmed'}">${s.status}</span></td><td><button onclick="confirmStu(${students.length-1-i})" style="width:auto;padding:4px 8px;font-size:12px">Confirm</button> <button onclick="delStu(${students.length-1-i})" style="width:auto;padding:4px 8px;background:red;font-size:12px">Del</button></td></tr>`;
+ });
+ document.getElementById('total').innerText=students.length;
+ document.getElementById('pend').innerText=pend;
+ document.getElementById('conf').innerText=conf;
+}
+function confirmStu(idx){let students=JSON.parse(localStorage.getItem('mda_students')||'[]');students[idx].status='Confirmed';localStorage.setItem('mda_students',JSON.stringify(students));loadData();}
+function delStu(idx){if(confirm('Futa?')){let students=JSON.parse(localStorage.getItem('mda_students')||'[]');students.splice(idx,1);localStorage.setItem('mda_students',JSON.stringify(students));loadData();}}
+function clearAll(){if(confirm('Futa WOTE?')){localStorage.removeItem('mda_students');loadData();}}
+function exportCSV(){let students=JSON.parse(localStorage.getItem('mda_students')||'[]');let csv='Name,Phone,Course,Date,Status\n';students.forEach(s=>{csv+=`"${s.name}","${s.phone}","${s.course}","${s.date}","${s.status}"\n`});let blob=new Blob([csv],{type:'text/csv'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='MDA_Students.csv';a.click();}
+</script>
+</body>
+</html>
